@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Algoritmo de Dijkstra</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container py-5">
+        <h1 class="text-center text-primary mb-4">Algoritmo de Dijkstra</h1>
+
+        <div class="card shadow p-4">
+            <form id="dijkstra-form">
+                <div class="mb-3">
+                    <label for="edges" class="form-label">Aristas (nodo1 nodo2 peso, separados por coma):</label>
+                    <input type="text" id="edges" class="form-control" placeholder="Ej: A B 4, A C 2, B C 1" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="source" class="form-label">Nodo de origen:</label>
+                        <input type="text" id="source" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="target" class="form-label">Nodo de destino:</label>
+                        <input type="text" id="target" class="form-control" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Calcular Ruta Más Corta</button>
+            </form>
+        </div>
+
+        <div class="mt-5 text-center">
+            <h2 class="text-success">Resultados</h2>
+            <p id="path" class="fw-bold"></p>
+            <p id="length" class="text-secondary"></p>
+            <img id="graph-image" src="" alt="Imagen del grafo" class="img-fluid shadow">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('dijkstra-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const edgesInput = document.getElementById('edges').value;
+            const edges = edgesInput.split(',').map(edge => {
+                const [node1, node2, weight] = edge.trim().split(' ');
+                return [node1, node2, parseInt(weight)];
+            });
+
+            const source = document.getElementById('source').value;
+            const target = document.getElementById('target').value;
+
+            const response = await fetch('/dijkstra', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ edges, source, target })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                alert(data.error);
+            } else {
+                document.getElementById('path').textContent = `Ruta más corta: ${data.path.join(' → ')}`;
+                document.getElementById('length').textContent = `Longitud: ${data.length}`;
+                document.getElementById('graph-image').src = `data:image/png;base64,${data.graph_image}`;
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
